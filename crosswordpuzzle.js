@@ -12,7 +12,7 @@ class CrosswordPuzzle {
 
     generateGrid() {
         this.generatedGrids = [];
-        for (let gridsCount = 0; gridsCount < 1; gridsCount++) {
+        for (let gridsCount = 0; gridsCount < 10; gridsCount++) {
             this.wordOrientation = undefined;
             let grid = new CrosswordGrid(25);
             let word = new Word(this.getLongestWord(), 5, 5, this.getOrientation());
@@ -38,16 +38,22 @@ class CrosswordPuzzle {
         }
     }
 
-    getGrid(){
-        return this.generatedGrids[0];
+    getGrid() {
+        let best = this.generatedGrids[0];
+        for(let gr of this.generatedGrids) {
+            if(best.getLettersCount() > gr.getLettersCount()) {
+                best = gr;
+            }
+        }
+        return best;
     }
 
     printPuzzleToConsole() {
-        const grid = this.generatedGrids[0];
+        const grid = this.getGrid();
         let row = '';
         for (let i = 0; i < grid.size; i++) {
             for (let j = 0; j < grid.size; j++) {
-                row += grid.grid[i][j] + ' ';
+                row += (grid.getLetter(i, j) ?? '*') + ' ';
             }
             console.log(row);
             row = '';

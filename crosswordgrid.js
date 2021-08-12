@@ -1,11 +1,11 @@
 class CrosswordGrid {
     _gridSize = 20;
-    grid;
+    _grid;
     _emptyChar = '*';
 
     constructor(size) {
         this._gridSize = size;
-        this.grid = new Array(this._gridSize);
+        this._grid = new Array(this._gridSize);
         this.initializeGrid();
     }
 
@@ -15,19 +15,18 @@ class CrosswordGrid {
 
     initializeGrid() {
         for (let x = 0; x < this._gridSize; x++) {
-            this.grid[x] = new Array(this._gridSize);
+            this._grid[x] = new Array(this._gridSize);
             for (let y = 0; y < this._gridSize; y++) {
-                this.grid[x][y] = this._emptyChar;
+                this._grid[x][y] = this._emptyChar;
             }
         }
     }
 
     getLetter(row, col) {
-        return this.isLetter(row, col) ? this.grid[row][col] : null;
+        return this.isLetter(row, col) ? this._grid[row][col] : null;
     }
 
     addWord(word) {
-        console.log('Adding word', word.text);
         for (let i = 0; i < word.text.length; ++i) {
             let r = word.row;
             let c = word.col;
@@ -37,7 +36,7 @@ class CrosswordGrid {
                 c += i;
             }
 
-            this.grid[r][c] = word.text.substring(i, i + 1);
+            this._grid[r][c] = word.text.substring(i, i + 1);
         }
     }
 
@@ -53,13 +52,17 @@ class CrosswordGrid {
 
     canBePlaced(word) {
         let canBePlaced = true;
-        if (word.text && this.isValidPosition(word.row, word.col) && this.wordFits(word)) {
+        const checkBeforeStart = word.vertical ?
+            this.isValidPosition(word.row - 1, word.col) && this.isEmptyCell(word.row - 1, word.col) :
+            this.isValidPosition(word.row, word.col - 1) && this.isEmptyCell(word.row, word.col - 1);
+
+        if (word.text && this.isValidPosition(word.row, word.col) && this.wordFits(word) && checkBeforeStart) {
             let index = 0;
             while (index < word.text.length) {
                 let r = word.vertical ? word.row + index : word.row;
                 let c = !word.vertical ? word.col + index : word.col;
 
-                if ((word.text.charAt(index) === this.grid[r][c] || this.isEmptyCell(r, c)) &&
+                if ((word.text.charAt(index) === this._grid[r][c] || this.isEmptyCell(r, c)) &&
                     this.legalPlacement(word, r, c)) {
                     // canBePlaced = true;
                 } else {
@@ -94,17 +97,16 @@ class CrosswordGrid {
     isCrossing(word, row, col) {
         let crossing = false;
         const isEmpty = this.isEmptyCell(row, col);
-        const beforeFirstLetter = word.vertical ? this.charExists(word.row - 1, word.col) : this.charExists(word.row, word.col - 1);
         let adjacent = true;
         if (word.vertical) {
             adjacent = (this.charExists(row, col - 1) || this.charExists(row, col + 1)) ||
                 (this.isEndOfWord(word, row, col) && this.charExists(row + 1, col));
-                
+
         } else {
             adjacent = (this.charExists(row - 1, col) || this.charExists(row + 1, col)) ||
                 (this.isEndOfWord(word, row, col) && this.charExists(row, col + 1));
         }
-        crossing = isEmpty && adjacent && beforeFirstLetter;
+        crossing = isEmpty && adjacent;
 
         return crossing;
     }
@@ -143,16 +145,7 @@ class CrosswordGrid {
     }
 
     isEmptyCell(row, col) {
-        if(!this.grid) {
-            console.log('NULL grid');
-        }
-        if(!this.grid[row]) {
-            console.log('NULL row', row);
-        }
-        if(!this.grid[row][col]) {
-            console.log('NULL col', col);
-        }
-        return this.grid[row][col] === this._emptyChar;
+        return this._grid[row][col] === this._emptyChar;
     }
 
     wordFits(word) {
@@ -165,5 +158,18 @@ class CrosswordGrid {
 
     isValidPosition(row, col) {
         return row >= 0 && row <= this._gridSize && col >= 0 && col <= this._gridSize;
+    }
+
+    getLettersCount() {
+        let letters = 0;
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                if (this.isLetter(i, j)) {
+                    letters++;
+                }
+            }
+        }
+        
+        return letters;
     }
 }
